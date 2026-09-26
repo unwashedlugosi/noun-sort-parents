@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Noun Sort Parents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+:root{
+  --bg:#f4f7fc; --surface:#ffffff; --ink:#18223b; --muted:#56627f; --line:#d5ddee;
+  --concrete:#1c7450; --concrete-soft:#e2f2e9; --abstract:#6a3cbd; --abstract-soft:#eee7fa;
+  --good:#1c7450; --bad:#b93a24; --focus:#2d5bd7; --accent:#18223b; --accent-ink:#ffffff;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme:dark;
+    --bg:#0f1420; --surface:#181f2f; --ink:#e8ecf6; --muted:#9ba6c1; --line:#2b3550;
+    --concrete:#62d39d; --concrete-soft:#14301f; --abstract:#bb98ff; --abstract-soft:#271d42;
+    --good:#62d39d; --bad:#ff8c75; --focus:#8fb0ff; --accent:#e8ecf6; --accent-ink:#0f1420;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:20px 48px}
+main{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:28px;font-weight:800}
+h1 .c{color:var(--concrete)} h1 .a{color:var(--abstract)} h1 .p{color:var(--muted);font-weight:600}
+h2{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:10px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.muted{color:var(--muted)} .small{font-size:14px}
+.btn{border:2px solid var(--line);background:transparent;border-radius:10px;padding:8px 14px;font-weight:700}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums;line-height:1.1}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:13px;color:var(--muted);font-weight:700}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.tag.C{background:var(--concrete-soft);color:var(--concrete)}
+.tag.A{background:var(--abstract-soft);color:var(--abstract)}
+.levels{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.levels li{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+.levels li b{display:block;font-size:15px}
+.levels li.done{border-color:var(--good)} .levels li.done b{color:var(--good)}
+.levels li.current{border:2px solid var(--ink)}
+.levels li.locked{opacity:.55}
+.field{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.field input{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.note{padding:12px 14px;border-radius:12px;border:1px dashed var(--line)}
+.err{color:var(--bad);font-weight:700}
+.linkrow{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.linkrow label{display:flex;flex-direction:column}
+.linkrow input{flex:1 1 260px;min-width:0;font-size:14px}
+@media (max-width:560px){ .stats{grid-template-columns:1fr 1fr} .levels{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<main id="app"><p class="muted">Loading…</p></main>
+<script src="content.js"></script>
+<script src="store.js"></script>
+<script>
+const APP_URL = "https://unwashedlugosi.github.io/noun-sort/";
+const PARENTS_URL = location.origin + location.pathname;
+let progress = null, rounds = [], status = "", confirmReset = false, busy = false, copied = "";
+const app = document.getElementById("app");
+
+function h(tag, attrs, ...kids){
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs || {})){
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (v === true) el.setAttribute(k, "");
+    else el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()){
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const pct = (s, t) => t ? Math.round(100 * s / t) + "%" : "–";
+const dayKey = t => { const d = new Date(t); return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); };
+const dayLabel = t => new Date(t).toLocaleDateString("en-US", {weekday:"short", month:"short", day:"numeric"});
+const timeLabel = t => new Date(t).toLocaleString("en-US", {weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"});
+
+async function load(){
+  if (!Store.ready){ progress = null; status = ""; render(); return; }
+  if (location.hash.slice(1) !== Store.id) history.replaceState(null, "", "#" + Store.id);
+  try {
+    ({progress, rounds} = await Store.load());
+    status = "Updated " + new Date().toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"}) + ".";
+  } catch (e){ status = "Couldn't reach the database: " + (e.message || e) + ". Check the connection and press Refresh."; }
+  render();
+}
+async function setup(){
+  busy = true; status = "Creating…"; render();
+  try { await Store.create(); history.replaceState(null, "", "#" + Store.id); busy = false; await load(); }
+  catch (e){ busy = false; status = "Couldn't create the database: " + (e.message || e) + ". Try again in a minute."; render(); }
+}
+async function change(fn){ // re-read, change, save, so we don't overwrite a round that just finished
+  busy = true; render();
+  try {
+    const doc = await Store.update(d => fn(d.progress));
+    progress = doc.progress; rounds = doc.rounds.slice().sort((a, b) => b.at - a.at); status = "Saved.";
+  } catch (e){ status = "Couldn't save: " + (e.message || e) + "."; }
+  busy = false; render();
+}
+async function copy(text, which){
+  try { await navigator.clipboard.writeText(text); copied = which; }
+  catch (e){ const el = document.getElementById(which); if (el){ el.focus(); el.select(); } copied = ""; }
+  render();
+}
+function linkRow(id, title, url, hint){
+  return h("div", {class:"linkrow"},
+    h("label", {for:id}, h("b", {}, title), h("span", {class:"small muted"}, hint)),
+    h("div", {class:"field"},
+      h("input", {id, type:"text", readonly:true, value:url, onfocus: e => e.target.select()}),
+      h("button", {class:"btn", onclick: () => copy(url, id)}, copied === id ? "Copied" : "Copy")));
+}
+
+function render(){
+  const kids = [
+    h("div", {class:"top"},
+      h("h1", {}, h("span",{class:"c"},"Noun"), h("span",{class:"a"},"Sort"), " ", h("span",{class:"p"},"Parents")),
+      h("button", {class:"btn", onclick: load, disabled: busy}, "Refresh")),
+    h("p", {class: /Couldn't|isn't/.test(status) ? "err small" : "muted small", role:"status"}, status)
+  ];
+  if (!Store.ready){
+    kids.push(h("section", {class:"note"},
+      h("h2", {}, "First-time setup"),
+      h("p", {}, "This creates the place where practice progress is saved, then gives you the link to send to your kid."),
+      h("div", {}, h("button", {class:"btn primary", disabled: busy, onclick: setup}, "Create progress database"))));
+    app.replaceChildren(...kids); return;
+  }
+  if (!progress){ app.replaceChildren(...kids); return; }
+  kids.push(h("section", {}, h("h2", {}, "Links"),
+    linkRow("applink", "Practice link", APP_URL + "#" + Store.id, "Send this to your kid. Progress saves to this database."),
+    linkRow("parentlink", "This page", PARENTS_URL + "#" + Store.id, "Bookmark it. Anyone with either link can see or change progress.")));
+
+  const now = Date.now(), weekAgo = now - 7*86400000;
+  const week = rounds.filter(r => r.at >= weekAgo);
+  const wS = week.reduce((a,r) => a + r.score, 0), wT = week.reduce((a,r) => a + r.total, 0);
+  const tests = rounds.filter(r => r.mode === "test");
+  const lv = progress.level;
+  const cur = LEVELS[lv-1];
+
+  kids.push(h("section", {},
+    h("div", {class:"stats"},
+      h("div", {class:"stat"}, h("b", {}, progress.cleared ? "Done" : "Level " + lv), h("span",{class:"small muted"}, progress.cleared ? "all 6 levels cleared" : cur.name + (progress.passStreak ? " · 1 of 2 passing rounds" : ""))),
+      h("div", {class:"stat"}, h("b", {}, pct(wS, wT)), h("span",{class:"small muted"}, "first-try accuracy, last 7 days")),
+      h("div", {class:"stat"}, h("b", {}, rounds.length), h("span",{class:"small muted"}, "rounds played")),
+      h("div", {class:"stat"}, h("b", {}, tests.length ? tests[0].score + "/" + tests[0].total : "–"), h("span",{class:"small muted"}, "last practice test")))));
+
+  kids.push(h("section", {}, h("h2", {}, "Levels"),
+    h("ol", {class:"levels"}, LEVELS.map(L => {
+      const done = L.n < lv || (L.n === lv && progress.cleared), current = L.n === lv && !progress.cleared;
+      const lr = rounds.filter(r => r.mode === "level" && r.level === L.n);
+      const s = lr.reduce((a,r) => a + r.score, 0), t = lr.reduce((a,r) => a + r.total, 0);
+      return h("li", {class: done ? "done" : current ? "current" : "locked"},
+        h("b", {}, L.n + ". " + L.name),
+        h("span", {class:"muted"}, lr.length ? lr.length + (lr.length === 1 ? " round · " : " rounds · ") + pct(s, t) : done ? "Cleared" : current ? "Current" : "Locked"));
+    }))));
+
+  const byDay = new Map();
+  for (const r of rounds){ const k = dayKey(r.at); if (!byDay.has(k)) byDay.set(k, {at:r.at, n:0, s:0, t:0, tests:0}); const d = byDay.get(k); d.n++; d.s += r.score; d.t += r.total; if (r.mode === "test") d.tests++; }
+  const days = [...byDay.values()].slice(0, 10);
+  kids.push(h("section", {}, h("h2", {}, "By day"),
+    days.length ? h("div", {class:"tablewrap"}, h("table", {},
+      h("thead", {}, h("tr", {}, h("th",{},"Day"), h("th",{class:"n"},"Rounds"), h("th",{class:"n"},"Tests"), h("th",{class:"n"},"Accuracy"))),
+      h("tbody", {}, days.map(d => h("tr", {}, h("td",{}, dayLabel(d.at)), h("td",{class:"n"}, d.n), h("td",{class:"n"}, d.tests || "–"), h("td",{class:"n"}, pct(d.s, d.t)))))))
+    : h("p", {class:"muted"}, "No rounds yet.")));
+
+  const watch = Object.entries(progress.misses || {}).filter(([id]) => BY_ID[id])
+    .sort((a,b) => b[1] - a[1] || (progress.boxes[a[0]]||0) - (progress.boxes[b[0]]||0)).slice(0, 15);
+  kids.push(h("section", {}, h("h2", {}, "Words to watch"),
+    watch.length ? h("div", {class:"tablewrap"}, h("table", {},
+      h("thead", {}, h("tr", {}, h("th",{},"Word"), h("th",{},"Answer"), h("th",{class:"n"},"Missed"), h("th",{},"Now"))),
+      h("tbody", {}, watch.map(([id, n]) => { const it = BY_ID[id], k = itemKind(it), b = progress.boxes[id] || 0;
+        return h("tr", {}, h("td",{}, itemLabel(it)), h("td",{}, k ? h("span",{class:"tag " + k}, label(k)) : "abstract noun"), h("td",{class:"n"}, n), h("td",{class:"small muted"}, b >= 3 ? "Getting it" : "Still tricky")); }))))
+    : h("p", {class:"muted"}, "Nothing missed yet.")));
+
+  const recent = rounds.slice(0, 12);
+  kids.push(h("section", {}, h("h2", {}, "Recent rounds"),
+    recent.length ? h("div", {class:"tablewrap"}, h("table", {},
+      h("thead", {}, h("tr", {}, h("th",{},"When"), h("th",{},"Round"), h("th",{class:"n"},"Score"), h("th",{},"Missed"))),
+      h("tbody", {}, recent.map(r => h("tr", {},
+        h("td",{class:"small"}, timeLabel(r.at)),
+        h("td",{}, r.mode === "test" ? "Practice test" : "Level " + r.level),
+        h("td",{class:"n"}, r.score + "/" + r.total),
+        h("td",{class:"small"}, (r.missed || []).map(id => BY_ID[id] ? itemLabel(BY_ID[id]) : id).join(", ") || "–"))))))
+    : h("p", {class:"muted"}, "No rounds yet.")));
+
+  kids.push(h("section", {}, h("h2", {}, "Settings"),
+    h("label", {class:"field", for:"testdate"}, h("span", {}, "Test date (shows as a countdown in the app)"),
+      h("input", {id:"testdate", type:"date", value: progress.testDate || "", disabled: busy,
+        onchange: e => { const v = e.target.value; progress.testDate = v; change(p => { p.testDate = v; }); }})),
+    confirmReset
+      ? h("div", {class:"field note"}, h("span", {}, "Erase level progress and word history? The round log above stays."),
+          h("button", {class:"btn danger", disabled: busy, onclick: () => { confirmReset = false; change(p => { const t = p.testDate; Object.keys(p).forEach(k => delete p[k]); Object.assign(p, freshProgress(t)); }); }}, "Erase"),
+          h("button", {class:"btn", onclick: () => { confirmReset = false; render(); }}, "Cancel"))
+      : h("div", {class:"field"}, h("button", {class:"btn", onclick: () => { confirmReset = true; render(); }}, "Reset progress…"))));
+
+  kids.push(h("p", {class:"small muted note"}, "How the app works: questions mix concrete and abstract, missed words come back sooner, and every answer explains why. A level unlocks after two rounds in a row at 8/10 or better, or one perfect round. The definitions show on levels 1 and 2 and then drop away. Accuracy counts first tries only."));
+
+  const focusId = document.activeElement && document.activeElement.id;
+  app.replaceChildren(...kids);
+  if (focusId){ const el = document.getElementById(focusId); if (el) el.focus(); }
+}
+
+load();
+</script>
+</body>
+</html>
