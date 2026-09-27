@@ -211,7 +211,7 @@ function render(){
         onchange: e => { const v = e.target.value; progress.testDate = v; change(p => { p.testDate = v; }); }})),
     confirmReset
       ? h("div", {class:"field note"}, h("span", {}, "Erase level progress and word history? The round log above stays."),
-          h("button", {class:"btn danger", disabled: busy, onclick: () => { confirmReset = false; change(p => { const t = p.testDate; Object.keys(p).forEach(k => delete p[k]); Object.assign(p, freshProgress(t)); }); }}, "Erase"),
+          h("button", {class:"btn danger", disabled: busy, onclick: () => { confirmReset = false; change(p => { const t = p.testDate; Object.keys(p).forEach(k => delete p[k]); Object.assign(p, freshProgress(t), {resetAt: Date.now()}); }); }}, "Erase"),
           h("button", {class:"btn", onclick: () => { confirmReset = false; render(); }}, "Cancel"))
       : h("div", {class:"field"}, h("button", {class:"btn", onclick: () => { confirmReset = true; render(); }}, "Reset progress…"))));
 
