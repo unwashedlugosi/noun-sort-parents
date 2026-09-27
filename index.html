@@ -144,6 +144,7 @@ function render(){
     kids.push(h("section", {class:"note"},
       h("h2", {}, "First-time setup"),
       h("p", {}, "This creates the place where practice progress is saved, then gives you the link to send to your kid."),
+      h("p", {class:"small muted"}, "Already set this up? Don't create another one. Open the parents link you bookmarked (it ends in #…) or the practice link, and this page will find the existing progress."),
       h("div", {}, h("button", {class:"btn primary", disabled: busy, onclick: setup}, "Create progress database"))));
     app.replaceChildren(...kids); return;
   }
