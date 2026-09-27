@@ -2,7 +2,8 @@
    Progress lives in one JSON document on jsonblob.com (free, no account):
      { progress: {...}, rounds: [ {at, mode, level, score, total, missed}, ... ] }
    The document's id travels in the link (#<id>) and is remembered in this
-   browser, so both sites find the same document. The parents site creates it. */
+   browser, so both sites find the same document. The practice app creates it
+   the first time it's opened. */
 const freshProgress = (testDate) => ({level:1, passStreak:0, cleared:false, boxes:{}, seen:{}, misses:{}, roundCount:0, testDate: testDate || TEST_DEFAULT});
 
 const Store = (() => {

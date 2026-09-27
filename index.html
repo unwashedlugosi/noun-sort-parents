@@ -142,15 +142,14 @@ function render(){
   ];
   if (!Store.ready){
     kids.push(h("section", {class:"note"},
-      h("h2", {}, "First-time setup"),
-      h("p", {}, "This creates the place where practice progress is saved, then gives you the link to send to your kid."),
-      h("p", {class:"small muted"}, "Already set this up? Don't create another one. Open the parents link you bookmarked (it ends in #…) or the practice link, and this page will find the existing progress."),
-      h("div", {}, h("button", {class:"btn primary", disabled: busy, onclick: setup}, "Create progress database"))));
+      h("h2", {}, "Open this from the practice app"),
+      h("p", {}, "On the computer your kid practices on, open the practice app and tap \u201cParents\u201d at the bottom. That opens this page connected to their progress. Bookmark it or send the address to yourself; it works on any device."),
+      h("p", {}, h("a", {href: APP_URL}, APP_URL))));
     app.replaceChildren(...kids); return;
   }
   if (!progress){ app.replaceChildren(...kids); return; }
   kids.push(h("section", {}, h("h2", {}, "Links"),
-    linkRow("applink", "Practice link", APP_URL + "#" + Store.id, "Send this to your kid. Progress saves to this database."),
+    linkRow("applink", "Practice link", APP_URL + "#" + Store.id, "The plain link works too on a device that has already opened it."),
     linkRow("parentlink", "This page", PARENTS_URL + "#" + Store.id, "Bookmark it. Anyone with either link can see or change progress.")));
 
   const now = Date.now(), weekAgo = now - 7*86400000;
