@@ -157,3 +157,66 @@ function itemPlain(item){
   if (item.t === "write") return item.base + " → " + item.answers[0];
   return item.text;
 }
+
+/* ---------- 15-minute refresher ----------
+   Level 0 items: used only by the refresher (lessons' quick checks and the
+   confidence test), never by level rounds or the practice test. */
+const TRAPS = {
+  sound:  "Trap 1: if you can hear it, see it, or feel it, it's concrete, even if you can't hold it.",
+  hidden: "Trap 2: ask whether you can sense the word itself, not just the things around it.",
+  pair:   "Trap 3: the person or thing is concrete. The idea made from it (-ship, -hood, -ness, -ism) is abstract."
+};
+const REFRESHER_ITEMS = [
+  // quick checks inside the lessons
+  {id:"q1",lv:0,t:"word",text:"wallet",a:"C",why:"You can see a wallet and hold it. Concrete."},
+  {id:"q2",lv:0,t:"word",text:"honesty",a:"A",why:"Honesty is a quality. You can't see, hear, touch, taste, or smell it. Abstract."},
+  {id:"q3",lv:0,t:"sentence",text:"The [pizza] was still warm.",a:"C",why:"You can see, touch, smell, and taste pizza. One yes is enough. Concrete."},
+  {id:"q4",lv:0,t:"sentence",text:"[Music] filled the gym.",a:"C",trap:"sound",why:"You can hear music. You can't hold it, but hearing is enough. Concrete."},
+  {id:"q5",lv:0,t:"sentence",text:"Everyone could see her [talent].",a:"A",trap:"hidden",why:"You see her drawings or her playing, not the talent itself. \"See\" is the trick. Talent is a skill. Abstract."},
+  {id:"q6",lv:0,t:"sentence",text:"Our [friendship] began in first grade.",a:"A",trap:"pair",why:"A friend is a person (concrete). Friendship is the bond between friends. Abstract."},
+  // confidence test, in order: easier first
+  {id:"r1",lv:0,t:"sentence",text:"The [puppy] chewed my shoe.",a:"C",why:"You can see, touch, and hear a puppy. Concrete."},
+  {id:"r2",lv:0,t:"sentence",text:"Her [kindness] made my day.",a:"A",why:"Kindness is a quality. You can see kind actions, but not kindness itself. Abstract."},
+  {id:"r3",lv:0,t:"sentence",text:"[Happiness] filled the classroom.",a:"A",why:"Happiness is a feeling. It lives in your mind. Abstract."},
+  {id:"r4",lv:0,t:"sentence",text:"Grandma baked warm [cookies].",a:"C",why:"You can see, smell, touch, and taste cookies. Concrete."},
+  {id:"r5",lv:0,t:"sentence",text:"We admired the rescue team's [courage].",a:"A",trap:"hidden",why:"You can see what the team did, but not courage itself. Courage is a quality. Abstract."},
+  {id:"r6",lv:0,t:"sentence",text:"The [roar] of the crowd was deafening.",a:"C",trap:"sound",why:"You can hear a roar. Anything you can hear is concrete."},
+  {id:"r7",lv:0,t:"sentence",text:"The [truth] finally came out.",a:"A",why:"Truth is an idea. You can't see, hear, touch, taste, or smell it. Abstract."},
+  {id:"r8",lv:0,t:"sentence",text:"A cool [breeze] blew through the window.",a:"C",trap:"sound",why:"You can feel a breeze on your skin and hear it. You can't hold it, but you can sense it. Concrete."},
+  {id:"r9",lv:0,t:"sentence",text:"His [skill] at chess is impressive.",a:"A",trap:"hidden",why:"You can see him play, but not the skill. A skill is an ability. Abstract."},
+  {id:"r10",lv:0,t:"sentence",text:"The [siren] wailed as the ambulance passed.",a:"C",trap:"sound",why:"You can hear a siren. Concrete."},
+  {id:"r11",lv:0,t:"sentence",text:"Everyone could see her [excitement].",a:"A",trap:"hidden",why:"The sentence says \"see,\" but you see her smile and bouncing, not the excitement. It's a feeling. Abstract."},
+  {id:"r12",lv:0,t:"sentence",text:"[Brotherhood] kept the team together.",a:"A",trap:"pair",why:"A brother is a person (concrete). Brotherhood is the bond between people. Abstract."},
+  {id:"r13",lv:0,t:"tap",text:"The firefighter showed great bravery.",nouns:{firefighter:"C",bravery:"A"},ask:"A",trap:"hidden",why:"Bravery is a quality. The firefighter is a person you can see."},
+  {id:"r14",lv:0,t:"tap",text:"The wind gave me an idea.",nouns:{wind:"C",idea:"A"},ask:"C",trap:"sound",why:"You can feel and hear the wind, so it's concrete. An idea lives in your mind."},
+  {id:"r15",lv:0,t:"write",base:"weak",frame:"Our team was weak on defense. The coach worked on that ___.",answers:["weakness"],why:"weak + -ness → weakness"}
+];
+ITEMS.push(...REFRESHER_ITEMS);
+for (const it of REFRESHER_ITEMS) BY_ID[it.id] = it;
+const REFRESHER_TEST = ["r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11","r12","r13","r14","r15"];
+
+const LESSONS = [
+  {title:"What's a noun?",
+   body:["A noun names a person, place, thing, or idea.", "Every noun is either concrete or abstract. Your test asks you to tell which one."],
+   examples:[["teacher","person"],["park","place"],["backpack","thing"],["freedom","idea"]]},
+  {title:"Concrete nouns",
+   body:["Concrete nouns are things you can sense.", "You can see, hear, touch, taste, or smell them. They're real stuff in the world."],
+   chips:{C:["apple","teacher","backpack","rain","music"]}, check:"q1"},
+  {title:"Abstract nouns",
+   body:["Abstract nouns can't be sensed.", "They live in your mind: feelings, ideas, and qualities."],
+   chips:{A:["happiness","fear","honesty","freedom","friendship"]}, check:"q2"},
+  {title:"The five-senses test",
+   body:["For any noun, ask: can I see it, hear it, touch it, taste it, or smell it?", "One yes is enough: concrete. No to all five: abstract."],
+   check:"q3"},
+  {title:"Trap 1: you can't hold it, but you can sense it",
+   body:["Some concrete nouns can't be picked up: music, thunder, wind, steam, smoke, a rainbow, a shadow.", "You can still hear them, see them, or feel them. One sense is enough, so they're concrete."],
+   chips:{C:["music","thunder","wind","steam","rainbow"]}, check:"q4"},
+  {title:"Trap 2: ideas hiding in real scenes",
+   body:["“The victory made the team cheer.” You can see the cheering and the trophy, but you can't see the victory itself. Victory is the idea of winning.", "Ask: can I sense this word, or only the stuff around it? Watch out when a sentence says “see.”"],
+   chips:{A:["victory","talent","danger","success","sadness"]}, check:"q5"},
+  {title:"Trap 3: look-alike pairs",
+   body:["The person or thing is concrete. The idea made from it is abstract.", "Endings like -ness, -ship, -hood, -dom, -ity, -ment, -ence, and -ism are a clue. Always double-check with the five-senses test."],
+   pairs:[["friend","friendship"],["child","childhood"],["leader","leadership"],["hero","heroism"],["tears","sadness"]], check:"q6"},
+  {title:"Ready for the test",
+   body:["15 questions. No hints this time. You'll see explanations at the end.", "Use the five-senses test on every one, and watch for the three traps."]}
+];

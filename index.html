@@ -155,7 +155,7 @@ function render(){
   const now = Date.now(), weekAgo = now - 7*86400000;
   const week = rounds.filter(r => r.at >= weekAgo);
   const wS = week.reduce((a,r) => a + r.score, 0), wT = week.reduce((a,r) => a + r.total, 0);
-  const tests = rounds.filter(r => r.mode === "test");
+  const tests = rounds.filter(r => r.mode === "test" || r.mode === "refresher");
   const lv = progress.level;
   const cur = LEVELS[lv-1];
 
@@ -164,7 +164,7 @@ function render(){
       h("div", {class:"stat"}, h("b", {}, progress.cleared ? "Done" : "Level " + lv), h("span",{class:"small muted"}, progress.cleared ? "all 6 levels cleared" : cur.name + (progress.passStreak ? " · 1 of 2 passing rounds" : ""))),
       h("div", {class:"stat"}, h("b", {}, pct(wS, wT)), h("span",{class:"small muted"}, "first-try accuracy, last 7 days")),
       h("div", {class:"stat"}, h("b", {}, rounds.length), h("span",{class:"small muted"}, "rounds played")),
-      h("div", {class:"stat"}, h("b", {}, tests.length ? tests[0].score + "/" + tests[0].total : "–"), h("span",{class:"small muted"}, "last practice test")))));
+      h("div", {class:"stat"}, h("b", {}, tests.length ? tests[0].score + "/" + tests[0].total : "–"), h("span",{class:"small muted"}, "last test")))));
 
   kids.push(h("section", {}, h("h2", {}, "Levels"),
     h("ol", {class:"levels"}, LEVELS.map(L => {
@@ -177,7 +177,7 @@ function render(){
     }))));
 
   const byDay = new Map();
-  for (const r of rounds){ const k = dayKey(r.at); if (!byDay.has(k)) byDay.set(k, {at:r.at, n:0, s:0, t:0, tests:0}); const d = byDay.get(k); d.n++; d.s += r.score; d.t += r.total; if (r.mode === "test") d.tests++; }
+  for (const r of rounds){ const k = dayKey(r.at); if (!byDay.has(k)) byDay.set(k, {at:r.at, n:0, s:0, t:0, tests:0}); const d = byDay.get(k); d.n++; d.s += r.score; d.t += r.total; if (r.mode === "test" || r.mode === "refresher") d.tests++; }
   const days = [...byDay.values()].slice(0, 10);
   kids.push(h("section", {}, h("h2", {}, "By day"),
     days.length ? h("div", {class:"tablewrap"}, h("table", {},
@@ -200,7 +200,7 @@ function render(){
       h("thead", {}, h("tr", {}, h("th",{},"When"), h("th",{},"Round"), h("th",{class:"n"},"Score"), h("th",{},"Missed"))),
       h("tbody", {}, recent.map(r => h("tr", {},
         h("td",{class:"small"}, timeLabel(r.at)),
-        h("td",{}, r.mode === "test" ? "Practice test" : "Level " + r.level),
+        h("td",{}, {test:"Practice test", refresher:"Refresher test", retry:"Missed ones, again"}[r.mode] || "Level " + r.level),
         h("td",{class:"n"}, r.score + "/" + r.total),
         h("td",{class:"small"}, (r.missed || []).map(id => BY_ID[id] ? itemLabel(BY_ID[id]) : id).join(", ") || "–"))))))
     : h("p", {class:"muted"}, "No rounds yet.")));
